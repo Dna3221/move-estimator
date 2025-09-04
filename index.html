@@ -2,14 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width,initial-scale=1"
-  />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Move Volume Estimator</title>
   <meta name="theme-color" content="#0ea5e9"/>
 
-  <!-- EmailJS (no server needed) -->
+  <!-- EmailJS (no server) -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
 
   <!-- Fonts -->
@@ -18,13 +15,12 @@
 
   <style>
     :root{
-      /* LIGHT, HIGH-READABILITY THEME */
       --bg:#f5f7fb;
       --panel:#ffffff;
       --muted:#51607a;
       --text:#0f172a;
-      --brand:#0ea5e9;     /* sky-500 */
-      --brand-2:#22d3ee;   /* cyan-400 */
+      --brand:#0ea5e9;
+      --brand-2:#22d3ee;
       --card:#ffffff;
       --card-2:#fafcff;
       --ring: rgba(14,165,233,.35);
@@ -40,7 +36,6 @@
       color:var(--text);
       font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
     }
-
     header{
       position:sticky; top:0; z-index:30;
       background:rgba(255,255,255,.85);
@@ -71,13 +66,17 @@
     }
     .btn.ghost{background:transparent}
     .btn.small{padding:6px 9px; font-size:13px}
+    #btnSubmit{
+      background:linear-gradient(135deg,#22c55e,#86efac);
+      border-color:transparent; color:#052b13;
+    }
 
     /* layout */
     main.wrap{padding-top:16px}
     .grid-2{display:grid; grid-template-columns:1.15fr .85fr; gap:16px}
     @media (max-width:1024px){ .grid-2{grid-template-columns:1fr} }
 
-    /* panel */
+    /* panels */
     .panel{
       background:linear-gradient(180deg, var(--card), var(--card-2));
       border:1px solid var(--border);
@@ -178,13 +177,6 @@
 
     .searchWrap{display:flex; gap:8px; align-items:center; margin-top:12px}
     .searchWrap input{flex:1}
-
-    /* submit button (toolbar) */
-    #btnSubmit{
-      background:linear-gradient(135deg,#22c55e,#86efac);
-      border-color:transparent;
-      color:#052b13;
-    }
   </style>
 </head>
 <body>
@@ -305,13 +297,13 @@
 
 <script>
 /* ========= EmailJS CONFIG =========
-   1) Uzupełnij swoje klucze/ID:
+   Wklej swoje wartości poniżej
 */
-const EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";     // <- wklej swój public key
-const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";     // <- wklej swój service id
-const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";    // <- wklej swój template id
+const EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";
 
-/* Stały adres docelowy (możesz wpisać firmowy) */
+/* Stały adres docelowy (Twój firmowy) */
 const FIXED_TO_EMAIL = "your-fixed-email@example.com";
 
 /* ========= INIT EmailJS ========= */
@@ -332,15 +324,13 @@ function safeImg(name){
 */
 const CATALOG = {
   "Boxes & Packing": [
-    /* UPDATED S/L/Wardrobe based on exact mm sizes */
-    {id:"box-small",    name:"Small box (457×333×333 mm)",    dims:[45.7,33.3,33.3], img:safeImg('box-')},
-    {id:"box-large",    name:"Large box (457×450×479 mm)",    dims:[45.7,45.0,47.9], img:safeImg('box-')},
-    {id:"wardrobe-box", name:"Wardrobe box (508×451×1016 mm)",dims:[50.8,45.1,101.6],img:safeImg('Wardrobe-Large')},
-
-    /* Common packing items */
-    {id:"bubble-roll", name:"Bubble wrap roll", dims:[120,25,25], img:safeImg('Roll-of-bubble')},
-    {id:"tape-pack",   name:"Packing tapes (set)", dims:[30,30,10], img:safeImg('Tape')},
-    {id:"paper-stack", name:"Packing paper stack", dims:[40,30,10], img:safeImg('box-')},
+    /* UPDATED sizes per your spec (converted from mm to cm) */
+    {id:"box-small",    name:"Small box (457×333×333 mm)",     dims:[45.7,33.3,33.3],  img:safeImg('box-')},
+    {id:"box-large",    name:"Large box (457×450×479 mm)",     dims:[45.7,45.0,47.9],  img:safeImg('box-')},
+    {id:"wardrobe-box", name:"Wardrobe box (508×451×1016 mm)", dims:[50.8,45.1,101.6], img:safeImg('Wardrobe-Large')},
+    {id:"bubble-roll",  name:"Bubble wrap roll",                dims:[120,25,25],       img:safeImg('Roll-of-bubble')},
+    {id:"tape-pack",    name:"Packing tapes (set)",             dims:[30,30,10],        img:safeImg('Tape')},
+    {id:"paper-stack",  name:"Packing paper stack",             dims:[40,30,10],        img:safeImg('box-')}
   ],
 
   "Dining Room": [
@@ -353,7 +343,7 @@ const CATALOG = {
     {id:"bar-cart", name:"Bar cart", dims:[80,45,80], img:safeImg('Serving-Trolley')},
     {id:"bench", name:"Bench (2–3 seats)", dims:[120,40,45], img:safeImg('Workbench')},
     {id:"wine-rack", name:"Wine rack", dims:[60,30,90], img:safeImg('Wine-Rack')},
-    {id:"wall-shelf-small", name:"Small wall shelf", dims:[60,20,30], img:safeImg('Bookshelf')},
+    {id:"wall-shelf-small", name:"Small wall shelf", dims:[60,20,30], img:safeImg('Bookshelf')}
   ],
 
   "Living Room": [
@@ -371,7 +361,7 @@ const CATALOG = {
     {id:"storage-ottoman", name:"Storage ottoman", dims:[90,45,45], img:safeImg('Blanket-Box')},
     {id:"footstool", name:"Footstool", dims:[50,50,40], img:safeImg('Blanket-Box')},
     {id:"fireplace", name:"Fireplace surround", dims:[120,40,100], img:safeImg('Picture')},
-    {id:"corner-shelf", name:"Corner unit shelf", dims:[40,40,180], img:safeImg('Bookshelf')},
+    {id:"corner-shelf", name:"Corner unit shelf", dims:[40,40,180], img:safeImg('Bookshelf')}
   ],
 
   "Bedroom (Master)": [
@@ -384,7 +374,7 @@ const CATALOG = {
     {id:"dressing-stool", name:"Dressing stool", dims:[40,40,45], img:safeImg('Laundry-Basket')},
     {id:"standing-mirror", name:"Mirror (standing)", dims:[50,40,160], img:safeImg('mirror')},
     {id:"blanket-box", name:"Blanket box", dims:[100,45,45], img:safeImg('Blanket-Box')},
-    {id:"shoe-cabinet", name:"Shoe cabinet", dims:[70,25,100], img:safeImg('Drawers-Small-single')},
+    {id:"shoe-cabinet", name:"Shoe cabinet", dims:[70,25,100], img:safeImg('Drawers-Small-single')}
   ],
 
   "Bedroom 2": [
@@ -397,7 +387,7 @@ const CATALOG = {
     {id:"desk-chair", name:"Desk chair", dims:[55,55,90], img:safeImg('Kitchen-Chair-1')},
     {id:"bookshelf-2", name:"Bookshelf", dims:[70,30,120], img:safeImg('Bookshelf')},
     {id:"storage-otto-2", name:"Storage ottoman", dims:[80,40,40], img:safeImg('Blanket-Box')},
-    {id:"tv-wall", name:"TV wall unit", dims:[90,40,50], img:safeImg('led-tv')},
+    {id:"tv-wall", name:"TV wall unit", dims:[90,40,50], img:safeImg('led-tv')}
   ],
 
   "Bedroom 3": [
@@ -410,7 +400,7 @@ const CATALOG = {
     {id:"desk-small", name:"Desk (small)", dims:[90,50,75], img:safeImg('study-Desk-1')},
     {id:"folding-chair", name:"Folding chair", dims:[45,45,85], img:safeImg('Kitchen-Chair-1')},
     {id:"toy-chest", name:"Toy chest", dims:[80,45,45], img:safeImg('trunk')},
-    {id:"shelf-small", name:"Small shelving unit", dims:[60,30,90], img:safeImg('Bookshelf')},
+    {id:"shelf-small", name:"Small shelving unit", dims:[60,30,90], img:safeImg('Bookshelf')}
   ],
 
   "Bedroom 4 / Guest": [
@@ -423,7 +413,7 @@ const CATALOG = {
     {id:"wall-shelf", name:"Wall-mounted shelf", dims:[80,25,30], img:safeImg('Bookshelf')},
     {id:"desk-folding", name:"Desk (folding)", dims:[80,45,75], img:safeImg('study-Desk-1')},
     {id:"office-chair", name:"Office chair", dims:[60,60,100], img:safeImg('Kitchen-Chair-1')},
-    {id:"clothes-rail", name:"Clothes rail", dims:[100,50,160], img:safeImg('Wardrobe-Large')},
+    {id:"clothes-rail", name:"Clothes rail", dims:[100,50,160], img:safeImg('Wardrobe-Large')}
   ],
 
   "Kitchen": [
@@ -441,7 +431,7 @@ const CATALOG = {
     {id:"storage-trolley", name:"Storage trolley", dims:[60,40,80], img:safeImg('Serving-Trolley')},
     {id:"wine-rack-counter", name:"Wine rack (counter)", dims:[40,25,50], img:safeImg('Wine-Rack')},
     {id:"corner-cabinet", name:"Corner cabinet", dims:[80,80,90], img:safeImg('Bookshelf')},
-    {id:"larder", name:"Larder cupboard", dims:[100,50,200], img:safeImg('Wardrobe-Large')},
+    {id:"larder", name:"Larder cupboard", dims:[100,50,200], img:safeImg('Wardrobe-Large')}
   ],
 
   "Loft": [
@@ -454,7 +444,7 @@ const CATALOG = {
     {id:"seasonal-box", name:"Seasonal decorations box", dims:[60,40,40], img:safeImg('box-')},
     {id:"clothing-rails", name:"Clothing rails", dims:[100,50,160], img:safeImg('Wardrobe-Large')},
     {id:"old-tv", name:"Old TV", dims:[100,40,70], img:safeImg('led-tv')},
-    {id:"filing-cab", name:"Filing cabinet", dims:[45,60,120], img:safeImg('bedside-table')},
+    {id:"filing-cab", name:"Filing cabinet", dims:[45,60,120], img:safeImg('bedside-table')}
   ],
 
   "Basement": [
@@ -467,7 +457,7 @@ const CATALOG = {
     {id:"laundry-baskets", name:"Laundry baskets", dims:[50,50,70], img:safeImg('Laundry-Basket')},
     {id:"old-sofa", name:"Old sofa", dims:[180,85,80], img:safeImg('Sofa-Bed')},
     {id:"folding-table", name:"Folding table", dims:[120,60,75], img:safeImg('Table-1')},
-    {id:"plastic-chairs", name:"Plastic chairs", dims:[45,45,85], img:safeImg('Kitchen-Chair')},
+    {id:"plastic-chairs", name:"Plastic chairs", dims:[45,45,85], img:safeImg('Kitchen-Chair')}
   ],
 
   "Garden": [
@@ -480,7 +470,7 @@ const CATALOG = {
     {id:"plastic-box", name:"Storage box (plastic)", dims:[120,60,60], img:safeImg('trunk')},
     {id:"bbq", name:"BBQ grill", dims:[120,60,120], img:safeImg('BBQ')},
     {id:"parasol", name:"Parasol", dims:[200,200,220], img:safeImg('Beach-Umbrella')},
-    {id:"greenhouse", name:"Greenhouse (small)", dims:[150,120,200], img:safeImg('Outdoor-Plant')},
+    {id:"greenhouse", name:"Greenhouse (small)", dims:[150,120,200], img:safeImg('Outdoor-Plant')}
   ],
 
   "Office": [
@@ -491,8 +481,8 @@ const CATALOG = {
     {id:"desk", name:"Desk", dims:[140,70,75], img:safeImg('study-Desk-1')},
     {id:"mirror", name:"Mirror", dims:[60,5,100], img:safeImg('mirror')},
     {id:"scanner", name:"Scanner", dims:[45,35,15], img:safeImg('Scanner')},
-    {id:"bookcase", name:"Bookcase", dims:[80,30,180], img:safeImg('Bookshelf')},
-  ],
+    {id:"bookcase", name:"Bookcase", dims:[80,30,180], img:safeImg('Bookshelf')}
+  ]
 };
 
 /* ========= STATE ========= */
@@ -548,7 +538,7 @@ function renderTabs(){
 
 /* ========= HELPERS ========= */
 function cm3([L,W,H]){ return L*W*H; }
-function m3(dims){ return cm3(dims)/1e6; }
+function m3(dims){ return cm3(dims)/1e6; }         // dims in cm -> m³
 function ft3(valM3){ return Math.round(valM3*35.3147); }
 function fmtM3(v){ return v.toFixed(3); }
 
@@ -802,7 +792,7 @@ renderTabs(); load(); renderCards(); update();
 (function setupPWA(){
   if(!('serviceWorker' in navigator)) return;
 
-  // Build a minimal manifest dynamically (no extra files needed)
+  // Minimal manifest (embedded)
   const manifest = {
     name: "Move Volume Estimator",
     short_name: "Estimator",
@@ -820,7 +810,7 @@ renderTabs(); load(); renderCards(); update();
   const link = document.createElement('link');
   link.rel='manifest'; link.href=murl; document.head.appendChild(link);
 
-  // Service worker (very small, cache this page)
+  // Service worker (tiny cache)
   const swCode = `
     const CACHE='mv-estimator-v2';
     self.addEventListener('install',e=>{
@@ -849,14 +839,18 @@ renderTabs(); load(); renderCards(); update();
   let deferredPrompt=null;
   window.addEventListener('beforeinstallprompt', (e)=>{
     e.preventDefault(); deferredPrompt=e;
-    els.btnInstall.hidden=false;
+    const btn=document.getElementById('btnInstall');
+    if(btn) btn.hidden=false;
   });
-  els.btnInstall.addEventListener('click', async ()=>{
-    if(!deferredPrompt) return;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt=null; els.btnInstall.hidden=true;
-  });
+  const btnInstall=document.getElementById('btnInstall');
+  if(btnInstall){
+    btnInstall.addEventListener('click', async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt=null; btnInstall.hidden=true;
+    });
+  }
 })();
 </script>
 </body>
