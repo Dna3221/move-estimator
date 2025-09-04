@@ -1,128 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Move Estimator</title>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.6.4/dist/email.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Move Volume Estimator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #d9f0ff;
-      color: #222;
       margin: 0;
       padding: 20px;
+      background-color: #0a1a3c; /* ciemnoniebieskie tło */
+      color: #ffffff; /* biały tekst */
     }
-    h1 { text-align: center; }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    }
     .item {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
       padding: 6px;
-      margin: 4px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      background: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
     }
-    .fragile { background: #ffe8e8; border-color: #ff6b6b; }
-    .item label { flex: 1; }
-    #total { font-weight: bold; font-size: 1.2em; margin-top: 20px; }
-    button {
-      padding: 6px 12px;
-      margin-left: 10px;
-      border-radius: 6px;
+    .item button {
+      padding: 4px 10px;
+      margin-left: 6px;
+      background: #ffffff;
       border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
-    .fragile-btn { background: #ffb6b6; }
-    #submitBtn { background: #4caf50; color: white; margin-top: 20px; }
+    .item button:hover {
+      background: #ddd;
+    }
+    #total {
+      font-size: 20px;
+      margin-top: 20px;
+      text-align: right;
+      font-weight: bold;
+      color: #ffcc00;
+    }
   </style>
 </head>
 <body>
   <h1>📦 Move Volume Estimator</h1>
-  <div id="items"></div>
-  <div id="total">Total Volume: 0 m³</div>
-  <button id="submitBtn">Submit Estimate</button>
+  <div class="container">
+    <div id="items"></div>
+    <div id="total">Total Volume: 0 m³</div>
+  </div>
 
   <script>
-    // INIT EmailJS
-    (function(){
-      emailjs.init("YOUR_PUBLIC_KEY"); // <<< tu wklej swój public key
-    })();
-
+    // Lista przykładowych przedmiotów z objętościami
     const items = [
-      { name: "Small Box (457x333x333mm)", volume: 0.05 },
-      { name: "Large Box (457x450x479mm)", volume: 0.10 },
-      { name: "Wardrobe Box (508x451x1016mm)", volume: 0.23 },
-      { name: "Sofa 3-Seater", volume: 2.5 },
-      { name: "King Size Bed", volume: 1.8 },
-      { name: "Office Chair", volume: 0.5 }
+      { name: "Small Box", volume: 0.05 },
+      { name: "Medium Box", volume: 0.1 },
+      { name: "Large Box", volume: 0.15 },
+      { name: "Wardrobe Box", volume: 0.3 },
+      { name: "Sofa 3-Seater", volume: 2.0 },
+      { name: "Double Bed", volume: 1.5 },
+      { name: "Dining Table", volume: 1.2 },
+      { name: "Chair", volume: 0.3 }
     ];
 
-    const container = document.getElementById("items");
+    let totalVolume = 0;
+
+    const itemsContainer = document.getElementById("items");
     const totalDiv = document.getElementById("total");
-    let total = 0;
 
-    items.forEach((item) => {
-      const div = document.createElement("div");
-      div.classList.add("item");
-
-      const label = document.createElement("label");
-      label.textContent = `${item.name} (${item.volume} m³)`;
-
-      const input = document.createElement("input");
-      input.type = "number";
-      input.min = 0;
-      input.value = 0;
-      input.style.width = "50px";
-
-      const fragileBtn = document.createElement("button");
-      fragileBtn.textContent = "Fragile";
-      fragileBtn.classList.add("fragile-btn");
-      fragileBtn.onclick = () => {
-        div.classList.toggle("fragile");
-      };
-
-      input.addEventListener("input", () => {
-        calculateTotal();
-      });
-
-      div.appendChild(label);
-      div.appendChild(input);
-      div.appendChild(fragileBtn);
-      container.appendChild(div);
+    items.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "item";
+      row.innerHTML = `
+        <span>${item.name} (${item.volume} m³)</span>
+        <div>
+          <button onclick="addVolume(${item.volume})">➕</button>
+          <button onclick="removeVolume(${item.volume})">➖</button>
+        </div>
+      `;
+      itemsContainer.appendChild(row);
     });
 
-    function calculateTotal() {
-      total = 0;
-      const inputs = document.querySelectorAll(".item input");
-      inputs.forEach((input, index) => {
-        total += parseFloat(input.value) * items[index].volume;
-      });
-      totalDiv.textContent = `Total Volume: ${total.toFixed(2)} m³`;
+    function addVolume(volume) {
+      totalVolume += volume;
+      updateTotal();
     }
 
-    // Submit via EmailJS
-    document.getElementById("submitBtn").addEventListener("click", () => {
-      let message = "Move Estimate:\n\n";
-      const inputs = document.querySelectorAll(".item input");
-      inputs.forEach((input, index) => {
-        const qty = parseInt(input.value);
-        if (qty > 0) {
-          const fragile = container.children[index].classList.contains("fragile") ? " (FRAGILE)" : "";
-          message += `${items[index].name}: ${qty} pcs${fragile}\n`;
-        }
-      });
-      message += `\nTotal Volume: ${total.toFixed(2)} m³`;
+    function removeVolume(volume) {
+      if (totalVolume >= volume) {
+        totalVolume -= volume;
+        updateTotal();
+      }
+    }
 
-      emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-        message: message
-      })
-      .then(() => {
-        alert("✅ Estimate sent successfully!");
-      }, (error) => {
-        alert("❌ Error: " + JSON.stringify(error));
-      });
-    });
+    function updateTotal() {
+      totalDiv.textContent = `Total Volume: ${totalVolume.toFixed(2)} m³`;
+    }
   </script>
 </body>
 </html>
