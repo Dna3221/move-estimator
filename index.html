@@ -42,7 +42,30 @@
     .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--line); font-size:18px}
     .card .content{padding:14px 16px}
 
-    /* Controls */
+    /* Tabs */
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+    .tab{padding:10px 14px; border:1px solid var(--line); border-radius:999px; background:#0b1e45; color:var(--text); cursor:pointer; user-select:none}
+    .tab.active{background:var(--accent); color:#000; font-weight:800}
+
+    /* Items grid (tiles) */
+    .items-toolbar{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+    .items-toolbar input{flex:1; min-width:220px; border-radius:999px; border:1px solid var(--line); background:#091b3f; color:var(--text); padding:10px 14px}
+
+    .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:10px}
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} }
+
+    .tile{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; padding:12px; border:1px solid var(--line); background:#0b1d42; border-radius:12px}
+    .tile .name{font-weight:700}
+    .tile small{color:var(--muted)}
+    .qty{display:flex; align-items:center; gap:8px; justify-self:end}
+    .qty input{width:64px; text-align:center; background:#071634; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px}
+    .btn{border:none; border-radius:8px; padding:8px 10px; cursor:pointer; background:#e9ecef;}
+    .btn:active{transform:translateY(1px)}
+    .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+    .btn-accent{background:var(--accent); color:#000; font-weight:700}
+    .btn-danger{background:var(--danger); color:#000; font-weight:700}
+
+    /* Controls on the right */
     .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px}
     .controls .col{background:var(--input); border:1px solid var(--line); border-radius:12px; padding:12px}
     .controls label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
@@ -51,23 +74,6 @@
     .controls select{width:100%; background:#091b3f; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px}
     .row-inline{display:flex; gap:8px}
     .chip{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted)}
-
-    /* Items */
-    .items-toolbar{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
-    .items-toolbar input{flex:1; min-width:220px; border-radius:999px; border:1px solid var(--line); background:#091b3f; color:var(--text); padding:10px 14px}
-    .items-toolbar select{border-radius:999px; border:1px solid var(--line); background:#091b3f; color:var(--text); padding:10px 14px}
-
-    .item{display:grid; grid-template-columns:1fr 90px 180px; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px dashed var(--line)}
-    .item:last-child{border-bottom:none}
-    .item-name{font-weight:600}
-    .item small{color:var(--muted)}
-    .qty{display:flex; align-items:center; gap:8px; justify-self:end}
-    .qty input{width:64px; text-align:center; background:#0b1d42; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px}
-    .btn{border:none; border-radius:8px; padding:8px 10px; cursor:pointer; background:#e9ecef;}
-    .btn:active{transform:translateY(1px)}
-    .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
-    .btn-accent{background:var(--accent); color:#000; font-weight:700}
-    .btn-danger{background:var(--danger); color:#000; font-weight:700}
 
     /* Summary */
     .summary-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
@@ -88,7 +94,7 @@
     <div class="row">
       <div class="brand">
         London House Removals Ltd
-        <small>Move Volume Estimator (dark navy)</small>
+        <small>Move Volume Estimator (Tabs · Dark Navy)</small>
       </div>
       <div class="chip">XXL Luton 26 m³</div>
       <div class="chip">Low Loader 40 m³</div>
@@ -96,26 +102,17 @@
   </header>
 
   <main>
-    <!-- LEFT: Items -->
+    <!-- LEFT: Items (Tabs + Tiles) -->
     <section class="card">
-      <h2>Inventory</h2>
+      <h2>Inventory by Room</h2>
       <div class="content">
+        <div class="tabs" id="tabs"></div>
         <div class="items-toolbar">
-          <input id="search" placeholder="Search items (e.g., wardrobe, box, sofa)…" />
-          <select id="categoryFilter">
-            <option value="all">All categories</option>
-            <option>Boxes</option>
-            <option>Bedroom</option>
-            <option>Living Room</option>
-            <option>Dining</option>
-            <option>Kitchen</option>
-            <option>Office</option>
-            <option>Outdoor</option>
-            <option>Misc</option>
-          </select>
-          <button class="btn btn-ghost" id="resetQuantities">Reset quantities</button>
+          <input id="search" placeholder="Search in current tab…" />
+          <button class="btn btn-ghost" id="resetTab">Reset this tab</button>
+          <button class="btn btn-ghost" id="resetAll">Reset all</button>
         </div>
-        <div id="items"></div>
+        <div id="tiles" class="grid"></div>
       </div>
     </section>
 
@@ -185,7 +182,6 @@
           <div class="actions">
             <button class="btn btn-accent" id="copySummary">Copy summary</button>
             <button class="btn btn-ghost" id="downloadJSON">Export JSON</button>
-            <button class="btn btn-danger" id="clearAll">Clear all</button>
           </div>
 
           <div class="note" style="margin-top:10px">
@@ -224,139 +220,142 @@
 
   <script>
     /*********************
-     * Data: Items (100+)
+     * Tabs & Items data
      *********************/
-    const ITEMS = [
-      // Boxes (12)
-      {cat:'Boxes', name:'Small Box (45×33×33 cm)', vol:0.05},
-      {cat:'Boxes', name:'Medium Box (60×40×40 cm)', vol:0.10},
-      {cat:'Boxes', name:'Large Box (75×50×47 cm)', vol:0.15},
-      {cat:'Boxes', name:'Wardrobe Box (hanging)', vol:0.30},
-      {cat:'Boxes', name:'Picture/Mirror Box', vol:0.10},
-      {cat:'Boxes', name:'Archive Box', vol:0.07},
-      {cat:'Boxes', name:'Wine Box (12)', vol:0.09},
-      {cat:'Boxes', name:'Lamp Box', vol:0.09},
-      {cat:'Boxes', name:'TV Box 50"', vol:0.12},
-      {cat:'Boxes', name:'TV Box 65"', vol:0.16},
-      {cat:'Boxes', name:'Suitcase Medium', vol:0.08},
-      {cat:'Boxes', name:'Suitcase Large', vol:0.12},
-
-      // Bedroom (20)
-      {cat:'Bedroom', name:'Bed — Single', vol:1.00},
-      {cat:'Bedroom', name:'Bed — Double', vol:1.50},
-      {cat:'Bedroom', name:'Bed — King', vol:1.80},
-      {cat:'Bedroom', name:'Bed — Super King', vol:2.00},
-      {cat:'Bedroom', name:'Mattress — Single', vol:0.50},
-      {cat:'Bedroom', name:'Mattress — Double', vol:0.70},
-      {cat:'Bedroom', name:'Mattress — King', vol:0.90},
-      {cat:'Bedroom', name:'Wardrobe 2‑door', vol:2.50},
-      {cat:'Bedroom', name:'Wardrobe 3‑door', vol:3.50},
-      {cat:'Bedroom', name:'Wardrobe 4‑door', vol:4.50},
-      {cat:'Bedroom', name:'Chest of Drawers — 3', vol:0.70},
-      {cat:'Bedroom', name:'Chest of Drawers — 5', vol:1.10},
-      {cat:'Bedroom', name:'Bedside Table', vol:0.25},
-      {cat:'Bedroom', name:'Dressing Table', vol:0.80},
-      {cat:'Bedroom', name:'Mirror (free‑standing)', vol:0.25},
-      {cat:'Bedroom', name:'Cot / Crib', vol:0.60},
-      {cat:'Bedroom', name:'Changing Table', vol:0.50},
-      {cat:'Bedroom', name:'Ottoman/Blanket Box', vol:0.40},
-      {cat:'Bedroom', name:'Clothes Rail', vol:0.30},
-      {cat:'Bedroom', name:'Shoe Cabinet', vol:0.60},
-
-      // Living Room (20)
-      {cat:'Living Room', name:'Sofa 2‑Seater', vol:1.50},
-      {cat:'Living Room', name:'Sofa 3‑Seater', vol:2.00},
-      {cat:'Living Room', name:'Corner Sofa (L‑shape)', vol:3.50},
-      {cat:'Living Room', name:'Sofa‑Bed (add‑on)', vol:0.50},
-      {cat:'Living Room', name:'Armchair', vol:0.80},
-      {cat:'Living Room', name:'Recliner Chair', vol:1.00},
-      {cat:'Living Room', name:'Footstool / Pouffe', vol:0.20},
-      {cat:'Living Room', name:'Coffee Table', vol:0.40},
-      {cat:'Living Room', name:'Side Table', vol:0.20},
-      {cat:'Living Room', name:'TV 32"', vol:0.20},
-      {cat:'Living Room', name:'TV 50"', vol:0.30},
-      {cat:'Living Room', name:'TV 65"', vol:0.40},
-      {cat:'Living Room', name:'TV Stand / Media Unit', vol:0.60},
-      {cat:'Living Room', name:'Bookcase — Small', vol:0.70},
-      {cat:'Living Room', name:'Bookcase — Large', vol:1.20},
-      {cat:'Living Room', name:'Sideboard — Small', vol:1.00},
-      {cat:'Living Room', name:'Sideboard — Large', vol:1.60},
-      {cat:'Living Room', name:'Display Cabinet', vol:1.40},
-      {cat:'Living Room', name:'Rug (rolled)', vol:0.20},
-      {cat:'Living Room', name:'Floor Lamp', vol:0.15},
-
-      // Dining (10)
-      {cat:'Dining', name:'Dining Table — Small', vol:0.80},
-      {cat:'Dining', name:'Dining Table — Large / Ext.', vol:1.20},
-      {cat:'Dining', name:'Dining Chair', vol:0.30},
-      {cat:'Dining', name:'Bar Stool', vol:0.20},
-      {cat:'Dining', name:'Glass Cabinet', vol:1.20},
-      {cat:'Dining', name:'Wine Rack', vol:0.40},
-      {cat:'Dining', name:'Welsh Dresser', vol:1.80},
-      {cat:'Dining', name:'Console Table', vol:0.50},
-      {cat:'Dining', name:'Grandfather Clock', vol:1.00},
-      {cat:'Dining', name:'Mirror — Large', vol:0.30},
-
-      // Kitchen (12)
-      {cat:'Kitchen', name:'Fridge Freezer — Tall', vol:1.20},
-      {cat:'Kitchen', name:'Fridge — Under‑counter', vol:0.60},
-      {cat:'Kitchen', name:'Freezer — Chest', vol:1.00},
-      {cat:'Kitchen', name:'Washing Machine', vol:0.80},
-      {cat:'Kitchen', name:'Dishwasher', vol:0.80},
-      {cat:'Kitchen', name:'Tumble Dryer', vol:0.80},
-      {cat:'Kitchen', name:'Microwave', vol:0.20},
-      {cat:'Kitchen', name:'Cooker / Range', vol:1.20},
-      {cat:'Kitchen', name:'Kitchen Island (small)', vol:1.00},
-      {cat:'Kitchen', name:'Bin (large)', vol:0.15},
-      {cat:'Kitchen', name:'Food Trolley', vol:0.30},
-      {cat:'Kitchen', name:'Water Dispenser', vol:0.40},
-
-      // Office (12)
-      {cat:'Office', name:'Desk — Small', vol:0.80},
-      {cat:'Office', name:'Desk — Large', vol:1.20},
-      {cat:'Office', name:'Office Chair', vol:0.50},
-      {cat:'Office', name:'Filing Cabinet — 2 Drawer', vol:0.60},
-      {cat:'Office', name:'Filing Cabinet — 4 Drawer', vol:0.90},
-      {cat:'Office', name:'Books (per 40 cm shelf)', vol:0.15},
-      {cat:'Office', name:'Printer / MFD', vol:0.40},
-      {cat:'Office', name:'PC Tower', vol:0.20},
-      {cat:'Office', name:'Monitor 24"', vol:0.12},
-      {cat:'Office', name:'Monitor 32"', vol:0.18},
-      {cat:'Office', name:'Whiteboard', vol:0.20},
-      {cat:'Office', name:'Plan Chest', vol:1.40},
-
-      // Outdoor / Garage (12)
-      {cat:'Outdoor', name:'Bike — Adult', vol:0.50},
-      {cat:'Outdoor', name:'Bike — Child', vol:0.30},
-      {cat:'Outdoor', name:'BBQ Grill', vol:0.70},
-      {cat:'Outdoor', name:'Garden Table', vol:1.00},
-      {cat:'Outdoor', name:'Garden Chair', vol:0.40},
-      {cat:'Outdoor', name:'Bench', vol:0.80},
-      {cat:'Outdoor', name:'Lawn Mower', vol:0.60},
-      {cat:'Outdoor', name:'Hose Reel', vol:0.15},
-      {cat:'Outdoor', name:'Planter — Small', vol:0.15},
-      {cat:'Outdoor', name:'Planter — Large', vol:0.40},
-      {cat:'Outdoor', name:'Dehumidifier', vol:0.25},
-      {cat:'Outdoor', name:'Ladder (folded)', vol:0.25},
-
-      // Misc / Heavy (12)
-      {cat:'Misc', name:'Piano — Upright', vol:2.50},
-      {cat:'Misc', name:'Piano — Grand (baby)', vol:3.50},
-      {cat:'Misc', name:'Safe — Small', vol:0.40},
-      {cat:'Misc', name:'Safe — Large', vol:1.20},
-      {cat:'Misc', name:'Aquarium (medium)', vol:0.80},
-      {cat:'Misc', name:'Treadmill', vol:1.20},
-      {cat:'Misc', name:'Cross Trainer', vol:1.20},
-      {cat:'Misc', name:'Rowing Machine', vol:0.90},
-      {cat:'Misc', name:'Drum Kit (5‑piece)', vol:0.80},
-      {cat:'Misc', name:'Artwork (large, crated)', vol:0.60},
-      {cat:'Misc', name:'Chandelier (crated)', vol:0.50},
-      {cat:'Misc', name:'Server Rack 18U', vol:1.20},
+    const TABS = [
+      'Living Room','Dining','Master Bedroom','Bedroom 1','Bedroom 2','Bedroom 3','Kitchen','Garden','Office','Boxes','Misc'
     ];
 
-    // Build a working map with quantities (persisted)
+    // Map items to tabs; each item has {tab, name, vol}
+    const ITEMS = [
+      // Living Room
+      {tab:'Living Room', name:'Sofa 2‑Seater', vol:1.50},
+      {tab:'Living Room', name:'Sofa 3‑Seater', vol:2.00},
+      {tab:'Living Room', name:'Corner Sofa (L‑shape)', vol:3.50},
+      {tab:'Living Room', name:'Armchair', vol:0.80},
+      {tab:'Living Room', name:'Recliner Chair', vol:1.00},
+      {tab:'Living Room', name:'Coffee Table', vol:0.40},
+      {tab:'Living Room', name:'Side Table', vol:0.20},
+      {tab:'Living Room', name:'TV 32"', vol:0.20},
+      {tab:'Living Room', name:'TV 50"', vol:0.30},
+      {tab:'Living Room', name:'TV 65"', vol:0.40},
+      {tab:'Living Room', name:'TV Stand / Media Unit', vol:0.60},
+      {tab:'Living Room', name:'Bookcase — Small', vol:0.70},
+      {tab:'Living Room', name:'Bookcase — Large', vol:1.20},
+      {tab:'Living Room', name:'Display Cabinet', vol:1.40},
+      {tab:'Living Room', name:'Rug (rolled)', vol:0.20},
+      {tab:'Living Room', name:'Floor Lamp', vol:0.15},
+      {tab:'Living Room', name:'Piano — Upright', vol:2.50},
+      {tab:'Living Room', name:'Piano — Grand (baby)', vol:3.50},
+      {tab:'Living Room', name:'Piano — Electric / Keyboard', vol:0.80},
+      {tab:'Living Room', name:'Indoor Plant (large)', vol:0.25},
+
+      // Dining
+      {tab:'Dining', name:'Dining Table — Small', vol:0.80},
+      {tab:'Dining', name:'Dining Table — Large / Ext.', vol:1.20},
+      {tab:'Dining', name:'Dining Chair', vol:0.30},
+      {tab:'Dining', name:'Bar Stool', vol:0.20},
+      {tab:'Dining', name:'Glass Cabinet', vol:1.20},
+      {tab:'Dining', name:'Wine Rack', vol:0.40},
+      {tab:'Dining', name:'Welsh Dresser', vol:1.80},
+      {tab:'Dining', name:'Console Table', vol:0.50},
+      {tab:'Dining', name:'Grandfather Clock', vol:1.00},
+      {tab:'Dining', name:'Mirror — Large', vol:0.30},
+
+      // Master Bedroom
+      {tab:'Master Bedroom', name:'Bed — Super King', vol:2.00},
+      {tab:'Master Bedroom', name:'Mattress — Super King', vol:1.00},
+      {tab:'Master Bedroom', name:'Wardrobe 4‑door', vol:4.50},
+      {tab:'Master Bedroom', name:'Chest of Drawers — 5', vol:1.10},
+      {tab:'Master Bedroom', name:'Bedside Table', vol:0.25},
+      {tab:'Master Bedroom', name:'Dressing Table', vol:0.80},
+      {tab:'Master Bedroom', name:'Mirror (free‑standing)', vol:0.25},
+      {tab:'Master Bedroom', name:'Ottoman/Blanket Box', vol:0.40},
+
+      // Bedroom 1
+      {tab:'Bedroom 1', name:'Bed — Double', vol:1.50},
+      {tab:'Bedroom 1', name:'Mattress — Double', vol:0.70},
+      {tab:'Bedroom 1', name:'Wardrobe 3‑door', vol:3.50},
+      {tab:'Bedroom 1', name:'Chest of Drawers — 3', vol:0.70},
+      {tab:'Bedroom 1', name:'Bedside Table', vol:0.25},
+      {tab:'Bedroom 1', name:'Desk — Small', vol:0.80},
+
+      // Bedroom 2
+      {tab:'Bedroom 2', name:'Bed — Single', vol:1.00},
+      {tab:'Bedroom 2', name:'Mattress — Single', vol:0.50},
+      {tab:'Bedroom 2', name:'Wardrobe 2‑door', vol:2.50},
+      {tab:'Bedroom 2', name:'Chest of Drawers — 3', vol:0.70},
+      {tab:'Bedroom 2', name:'Bedside Table', vol:0.25},
+
+      // Bedroom 3
+      {tab:'Bedroom 3', name:'Bed — Single', vol:1.00},
+      {tab:'Bedroom 3', name:'Mattress — Single', vol:0.50},
+      {tab:'Bedroom 3', name:'Wardrobe 2‑door', vol:2.50},
+      {tab:'Bedroom 3', name:'Bookcase — Small', vol:0.70},
+
+      // Kitchen
+      {tab:'Kitchen', name:'Microwave', vol:0.20},
+      {tab:'Kitchen', name:'Dishwasher', vol:0.80},
+      {tab:'Kitchen', name:'Washing Machine', vol:0.80},
+      {tab:'Kitchen', name:'Fridge — Under‑counter', vol:0.60},
+      {tab:'Kitchen', name:'Fridge Freezer — Tall', vol:1.20},
+      {tab:'Kitchen', name:'American Fridge Freezer', vol:1.80},
+      {tab:'Kitchen', name:'Freezer — Chest', vol:1.00},
+      {tab:'Kitchen', name:'Oven — Single', vol:0.60},
+      {tab:'Kitchen', name:'Range Cooker', vol:1.20},
+      {tab:'Kitchen', name:'Food Trolley', vol:0.30},
+      {tab:'Kitchen', name:'Bin (large)', vol:0.15},
+
+      // Garden
+      {tab:'Garden', name:'Outdoor Table', vol:1.00},
+      {tab:'Garden', name:'Outdoor Chair', vol:0.40},
+      {tab:'Garden', name:'Bench', vol:0.80},
+      {tab:'Garden', name:'BBQ Grill', vol:0.70},
+      {tab:'Garden', name:'Lawn Mower', vol:0.60},
+      {tab:'Garden', name:'Hose Reel', vol:0.15},
+      {tab:'Garden', name:'Planter — Small (outdoor)', vol:0.15},
+      {tab:'Garden', name:'Planter — Large (outdoor)', vol:0.40},
+      {tab:'Garden', name:'Dehumidifier', vol:0.25},
+      {tab:'Garden', name:'Ladder (folded)', vol:0.25},
+      {tab:'Garden', name:'Outdoor Plant (large)', vol:0.25},
+
+      // Office
+      {tab:'Office', name:'Desk — Large', vol:1.20},
+      {tab:'Office', name:'Office Chair', vol:0.50},
+      {tab:'Office', name:'Filing Cabinet — 4 Drawer', vol:0.90},
+      {tab:'Office', name:'Printer / MFD', vol:0.40},
+      {tab:'Office', name:'PC Tower', vol:0.20},
+      {tab:'Office', name:'Monitor 24"', vol:0.12},
+      {tab:'Office', name:'Monitor 32"', vol:0.18},
+      {tab:'Office', name:'Whiteboard', vol:0.20},
+
+      // Boxes
+      {tab:'Boxes', name:'Small Box (45×33×33 cm)', vol:0.05},
+      {tab:'Boxes', name:'Medium Box (60×40×40 cm)', vol:0.10},
+      {tab:'Boxes', name:'Large Box (75×50×47 cm)', vol:0.15},
+      {tab:'Boxes', name:'Wardrobe Box (hanging)', vol:0.30},
+      {tab:'Boxes', name:'Picture/Mirror Box', vol:0.10},
+      {tab:'Boxes', name:'Archive Box', vol:0.07},
+      {tab:'Boxes', name:'Wine Box (12)', vol:0.09},
+
+      // Misc
+      {tab:'Misc', name:'Safe — Small', vol:0.40},
+      {tab:'Misc', name:'Safe — Large', vol:1.20},
+      {tab:'Misc', name:'Aquarium (medium)', vol:0.80},
+      {tab:'Misc', name:'Treadmill', vol:1.20},
+      {tab:'Misc', name:'Cross Trainer', vol:1.20},
+      {tab:'Misc', name:'Rowing Machine', vol:0.90},
+      {tab:'Misc', name:'Drum Kit (5‑piece)', vol:0.80},
+      {tab:'Misc', name:'Artwork (large, crated)', vol:0.60},
+      {tab:'Misc', name:'Chandelier (crated)', vol:0.50}
+    ];
+
+    /*********************
+     * State & DOM refs
+     *********************/
     const state = {
-      quantities: JSON.parse(localStorage.getItem('lhr_quantities')||'{}'),
+      quantities: JSON.parse(localStorage.getItem('lhrq')||'{}'),
+      tab: localStorage.getItem('lhr_tab') || 'Living Room',
       propertyType: localStorage.getItem('lhr_propertyType') || 'house',
       houseFloors: +(localStorage.getItem('lhr_houseFloors')||0),
       flatFloor: +(localStorage.getItem('lhr_flatFloor')||0),
@@ -367,11 +366,11 @@
       notes: localStorage.getItem('lhr_notes')||''
     };
 
-    // DOM refs
-    const elItems = document.getElementById('items');
+    const elTabs = document.getElementById('tabs');
+    const elTiles = document.getElementById('tiles');
     const elSearch = document.getElementById('search');
-    const elCategory = document.getElementById('categoryFilter');
-    const elResetQty = document.getElementById('resetQuantities');
+    const elResetTab = document.getElementById('resetTab');
+    const elResetAll = document.getElementById('resetAll');
 
     const elTotalVolume = document.getElementById('totalVolume');
     const elItemsCount = document.getElementById('itemsCount');
@@ -392,46 +391,18 @@
     const elCrateL2 = document.getElementById('crateL2');
     const elCrateL3 = document.getElementById('crateL3');
 
-    const houseFloorsCol = document.getElementById('houseFloorsCol');
-    const flatFloorCol = document.getElementById('flatFloorCol');
-    const liftCol = document.getElementById('liftCol');
-
     const elCopy = document.getElementById('copySummary');
     const elExport = document.getElementById('downloadJSON');
-    const elClear = document.getElementById('clearAll');
-
     const elSend = document.getElementById('sendEmail');
     const elCName = document.getElementById('cName');
     const elCEmail = document.getElementById('cEmail');
 
-    // Render items list
-    function renderItems(){
-      const q = (elSearch.value||'').toLowerCase();
-      const cat = elCategory.value;
-      elItems.innerHTML='';
-      ITEMS.filter(it => (cat==='all'||it.cat===cat) && (it.name.toLowerCase().includes(q))).forEach((it, idx)=>{
-        const key = it.cat+'|'+it.name;
-        const qty = state.quantities[key]||0;
-        const row = document.createElement('div');
-        row.className = 'item';
-        row.innerHTML = `
-          <div>
-            <div class="item-name">${it.name}</div>
-            <small class="muted">${it.cat} · ${it.vol.toFixed(2)} m³</small>
-          </div>
-          <div><span class="chip">${(qty*it.vol).toFixed(2)} m³</span></div>
-          <div class="qty">
-            <button class="btn" data-act="minus" data-key="${key}" data-vol="${it.vol}">−</button>
-            <input type="number" min="0" value="${qty}" data-key="${key}" class="qty-input" />
-            <button class="btn" data-act="plus" data-key="${key}" data-vol="${it.vol}">+</button>
-          </div>
-        `;
-        elItems.appendChild(row);
-      });
-    }
-
+    /*********************
+     * Rendering
+     *********************/
     function saveState(){
-      localStorage.setItem('lhr_quantities', JSON.stringify(state.quantities));
+      localStorage.setItem('lhrq', JSON.stringify(state.quantities));
+      localStorage.setItem('lhr_tab', state.tab);
       localStorage.setItem('lhr_propertyType', state.propertyType);
       localStorage.setItem('lhr_houseFloors', state.houseFloors);
       localStorage.setItem('lhr_flatFloor', state.flatFloor);
@@ -443,25 +414,55 @@
       localStorage.setItem('lhr_crateL3', state.crates.L3);
     }
 
-    // Recompute totals + recommendations
+    function renderTabs(){
+      elTabs.innerHTML = '';
+      TABS.forEach(t=>{
+        const btn = document.createElement('button');
+        btn.className = 'tab'+(t===state.tab?' active':'');
+        btn.textContent = t;
+        btn.addEventListener('click', ()=>{ state.tab=t; saveState(); renderTabs(); renderTiles(); });
+        elTabs.appendChild(btn);
+      });
+    }
+
+    function renderTiles(){
+      const q = (elSearch.value||'').toLowerCase();
+      elTiles.innerHTML = '';
+      ITEMS.filter(it=> it.tab===state.tab && it.name.toLowerCase().includes(q)).forEach(it=>{
+        const key = it.tab+'|'+it.name;
+        const qty = state.quantities[key]||0;
+        const tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.innerHTML = `
+          <div>
+            <div class="name">${it.name}</div>
+            <small>${it.vol.toFixed(2)} m³</small>
+          </div>
+          <div class="qty">
+            <button class="btn" data-act="minus" data-key="${key}" data-vol="${it.vol}">−</button>
+            <input type="number" min="0" value="${qty}" data-key="${key}" class="qty-input" />
+            <button class="btn" data-act="plus" data-key="${key}" data-vol="${it.vol}">+</button>
+          </div>`;
+        elTiles.appendChild(tile);
+      });
+    }
+
+    /*********************
+     * Calculations
+     *********************/
     function recompute(){
-      // Totals
       let totalVol = 0; let itemsCount=0;
       for(const it of ITEMS){
-        const key = it.cat+'|'+it.name; const q = state.quantities[key]||0;
+        const key = it.tab+'|'+it.name; const q = state.quantities[key]||0;
         if(q>0){ itemsCount += q; totalVol += q*it.vol; }
       }
-      // Include crates (approx volumes)
+      // Include crates
       totalVol += state.crates.L2 * 0.064; // 64L ≈ 0.064 m³
       totalVol += state.crates.L3 * 0.080; // 80L ≈ 0.080 m³
 
-      // Crew & van rules by volume
       const rec = recommendCrewVehicle(totalVol, state);
-
-      // Time estimate
       const t = estimateTime(totalVol, state, rec.crew);
 
-      // Update UI
       elTotalVolume.textContent = totalVol.toFixed(2) + ' m³';
       elItemsCount.textContent = `${itemsCount} items`;
       elCrew.textContent = rec.crew ? `${rec.crew} movers` : '—';
@@ -474,31 +475,7 @@
       return {totalVol, itemsCount, rec, t};
     }
 
-    function recommendCrewVehicle(v, s){
-      let crew=2, crewHint='Base crew';
-      if(v>10) { crew=3; crewHint='Volume > 10 m³'; }
-      if(v>26) { crew=3; crewHint='Approaching full Luton'; }
-      if(v>35) { crew=4; crewHint='Large load'; }
-      if(v>52) { crew=5; crewHint='Very large load'; }
-
-      // Access adjustments
-      const stairsFactor = stairsMultiplier(s);
-      const distFactor = distanceMultiplier(s.distance);
-      if(stairsFactor > 0.20 || distFactor > 0.20){ crew += 1; crewHint += ' + difficult access'; }
-
-      // Vehicle choice (single-trip preference)
-      let vehicle='1 × Luton (26 m³)', vehicleHint='Single trip';
-      if(v<=26){ vehicle = '1 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
-      else if(v<=40){ vehicle = '1 × Low Loader (40 m³)'; vehicleHint = 'Single trip'; }
-      else if(v<=52){ vehicle = '2 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
-      else if(v<=80){ vehicle = '2 × Luton (26 m³), 2 trips or 1 × Low Loader + overflow'; vehicleHint = 'Multi-trip likely'; }
-      else { vehicle = 'Consider 7.5t or additional vans'; vehicleHint = 'Very large move'; }
-
-      return {crew, crewHint, vehicle, vehicleHint};
-    }
-
     function stairsMultiplier(s){
-      // Floors to factor (house floors are above ground; flat uses flatFloor)
       let floors = s.propertyType==='house' ? Number(s.houseFloors||0) : Number(s.flatFloor||0);
       if(isNaN(floors)||floors<0) floors = 0;
       let m = 0.10 * floors; // 10% per floor
@@ -513,60 +490,93 @@
       if(d<=10) return 0;
       if(d<=25) return 0.10;
       if(d<=50) return 0.20;
-      return 0.35; // long carry
+      return 0.35;
+    }
+
+    function recommendCrewVehicle(v, s){
+      let crew=2, crewHint='Base crew';
+      if(v>10) { crew=3; crewHint='Volume > 10 m³'; }
+      if(v>26) { crew=3; crewHint='Approaching full Luton'; }
+      if(v>35) { crew=4; crewHint='Large load'; }
+      if(v>52) { crew=5; crewHint='Very large load'; }
+
+      const stairsFactor = stairsMultiplier(s);
+      const distFactor = distanceMultiplier(s.distance);
+      if(stairsFactor > 0.20 || distFactor > 0.20){ crew += 1; crewHint += ' + difficult access'; }
+
+      let vehicle='1 × Luton (26 m³)', vehicleHint='Single trip';
+      if(v<=26){ vehicle = '1 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=40){ vehicle = '1 × Low Loader (40 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=52){ vehicle = '2 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=80){ vehicle = '2 × Luton (26 m³), 2 trips or 1 × Low Loader + overflow'; vehicleHint = 'Multi-trip likely'; }
+      else { vehicle = 'Consider 7.5t or additional vans'; vehicleHint = 'Very large move'; }
+
+      return {crew, crewHint, vehicle, vehicleHint};
     }
 
     function estimateTime(v, s, crew){
       if(!v || v<=0 || !crew) return {elapsed:0, hint:''};
-      // Baseline productivity: ~3.0 m³ per mover-hour under ideal access
-      const baseRatePerMover = 3.0;
+      const baseRatePerMover = 3.0; // m³ per mover-hour
       let baseHours = v / (crew * baseRatePerMover);
-      // Apply access multipliers
       const mStairs = stairsMultiplier(s);
       const mDist = distanceMultiplier(s.distance);
       const mTotal = 1 + mStairs + mDist;
-      const elapsed = baseHours * mTotal; // hours elapsed with this crew
+      const elapsed = baseHours * mTotal;
       const crewHours = elapsed * crew;
       const hint = `Crew‑hours ≈ ${crewHours.toFixed(1)} (stairs +${Math.round(mStairs*100)}%, distance +${Math.round(mDist*100)}%)`;
       return {elapsed, hint};
     }
 
-    // Event wiring
+    /*********************
+     * Events
+     *********************/
     function bindEvents(){
-      elItems.addEventListener('click', e=>{
+      // Tabs search
+      elSearch.addEventListener('input', renderTiles);
+
+      // Tile plus/minus and qty
+      elTiles.addEventListener('click', e=>{
         const btn = e.target.closest('button'); if(!btn) return;
         const key = btn.getAttribute('data-key');
         const act = btn.getAttribute('data-act');
         if(!key||!act) return;
         const current = state.quantities[key]||0;
         const next = Math.max(0, current + (act==='plus'?1:-1));
-        state.quantities[key]=next; saveState(); renderItems(); recompute();
+        state.quantities[key]=next; saveState(); renderTiles(); recompute();
       });
-      elItems.addEventListener('change', e=>{
+      elTiles.addEventListener('change', e=>{
         const inp = e.target.closest('.qty-input'); if(!inp) return;
         const key = inp.getAttribute('data-key'); let v = parseInt(inp.value,10);
-        if(isNaN(v)||v<0) v = 0; state.quantities[key]=v; saveState(); renderItems(); recompute();
+        if(isNaN(v)||v<0) v = 0; state.quantities[key]=v; saveState(); renderTiles(); recompute();
       });
 
-      [elSearch, elCategory].forEach(el=> el.addEventListener('input', renderItems));
-      elResetQty.addEventListener('click', ()=>{ state.quantities={}; saveState(); renderItems(); recompute(); });
+      // Reset buttons
+      elResetTab.addEventListener('click', ()=>{
+        if(!confirm('Reset quantities in this tab?')) return;
+        ITEMS.filter(it=>it.tab===state.tab).forEach(it=>{ const k=it.tab+'|'+it.name; delete state.quantities[k]; });
+        saveState(); renderTiles(); recompute();
+      });
+      elResetAll.addEventListener('click', ()=>{
+        if(!confirm('Reset ALL quantities?')) return;
+        state.quantities={}; saveState(); renderTiles(); recompute();
+      });
 
       // Details inputs
-      elPropertyType.value = state.propertyType;
-      elHouseFloors.value = state.houseFloors;
-      elFlatFloor.value = state.flatFloor;
-      elLift.value = state.lift;
-      elSteps.value = state.stairsSteps;
-      elDistance.value = state.distance;
-      elNotes.value = state.notes;
-      elCrateL2.value = state.crates.L2 || '';
-      elCrateL3.value = state.crates.L3 || '';
+      const elPropertyType = document.getElementById('propertyType');
+      const elHouseFloors = document.getElementById('houseFloors');
+      const elFlatFloor = document.getElementById('flatFloor');
+      const elLift = document.getElementById('liftAvailable');
+      const elSteps = document.getElementById('stairsSteps');
+      const elDistance = document.getElementById('distance');
+      const elNotes = document.getElementById('notes');
+      const elCrateL2 = document.getElementById('crateL2');
+      const elCrateL3 = document.getElementById('crateL3');
 
       function toggleAccess(){
         const type = elPropertyType.value;
-        houseFloorsCol.style.display = (type==='house')? 'block':'none';
-        flatFloorCol.style.display = (type==='flat')? 'block':'none';
-        liftCol.style.display = (type==='flat')? 'block':'none';
+        document.getElementById('houseFloorsCol').style.display = (type==='house')? 'block':'none';
+        document.getElementById('flatFloorCol').style.display = (type==='flat')? 'block':'none';
+        document.getElementById('liftCol').style.display = (type==='flat')? 'block':'none';
       }
       toggleAccess();
 
@@ -580,7 +590,7 @@
       elCrateL2.addEventListener('input', ()=>{ state.crates.L2 = +elCrateL2.value; saveState(); recompute(); });
       elCrateL3.addEventListener('input', ()=>{ state.crates.L3 = +elCrateL3.value; saveState(); recompute(); });
 
-      // Actions
+      // Copy & Export
       elCopy.addEventListener('click', ()=>{
         const data = buildSummary();
         navigator.clipboard.writeText(data.text).then(()=>{
@@ -592,12 +602,6 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href=url; a.download='move-estimate.json'; a.click(); URL.revokeObjectURL(url);
       });
-      elClear.addEventListener('click', ()=>{
-        if(!confirm('Clear all selections and details?')) return;
-        state.quantities={}; state.propertyType='house'; state.houseFloors=0; state.flatFloor=0; state.lift='no'; state.stairsSteps=0; state.distance=5; state.crates={L2:0,L3:0}; state.notes=''; saveState();
-        elPropertyType.value=state.propertyType; elHouseFloors.value=0; elFlatFloor.value=0; elLift.value='no'; elSteps.value=0; elDistance.value=5; elNotes.value=''; elCrateL2.value=''; elCrateL3.value='';
-        renderItems(); recompute();
-      });
 
       // EmailJS send
       elSend.addEventListener('click', ()=>{
@@ -606,7 +610,6 @@
         const email = (elCEmail.value||'').trim();
         if(!name || !email){ alert('Please enter client name and email'); return; }
         try{
-          // Set your keys below (public key, service ID, template ID)
           const PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
           const SERVICE_ID = 'YOUR_SERVICE_ID';
           const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
@@ -617,17 +620,20 @@
             client_email: email,
             summary_text: payload.text,
             json_data: JSON.stringify(payload)
-          }).then(()=> alert('Estimate sent.'), err=> alert('Email failed: '+err?.text||'unknown'));
+          }).then(()=> alert('Estimate sent.'), err=> alert('Email failed: '+(err?.text||'unknown')));
         }catch(err){ alert('Email error: '+err.message); }
       });
     }
 
+    /*********************
+     * Summary builder
+     *********************/
     function buildSummary(){
       const {totalVol, itemsCount, rec, t} = recompute();
       const selected = [];
       for(const it of ITEMS){
-        const key = it.cat+'|'+it.name; const q = state.quantities[key]||0;
-        if(q>0) selected.push({category:it.cat, name:it.name, qty:q, vol:it.vol, subtotal:+(q*it.vol).toFixed(2)});
+        const key = it.tab+'|'+it.name; const q = state.quantities[key]||0;
+        if(q>0) selected.push({tab:it.tab, name:it.name, qty:q, vol:it.vol, subtotal:+(q*it.vol).toFixed(2)});
       }
       const details = {
         propertyType: state.propertyType,
@@ -639,25 +645,39 @@
         crates: state.crates,
         notes: state.notes
       };
-      const text = `Move estimate\n\n`+
-        `Total volume: ${totalVol.toFixed(2)} m³\n`+
-        `Items: ${itemsCount}\n`+
-        `Recommended crew: ${rec.crew} movers (${rec.crewHint})\n`+
-        `Recommended vehicle: ${rec.vehicle} (${rec.vehicleHint})\n`+
-        `Estimated on-site time: ${t.elapsed? t.elapsed.toFixed(1):'-'} h (${t.hint})\n`+
+      const text = `Move estimate
+
+`+
+        `Total volume: ${totalVol.toFixed(2)} m³
+`+
+        `Items: ${itemsCount}
+`+
+        `Recommended crew: ${rec.crew} movers (${rec.crewHint})
+`+
+        `Recommended vehicle: ${rec.vehicle} (${rec.vehicleHint})
+`+
+        `Estimated on-site time: ${t.elapsed? t.elapsed.toFixed(1):'-'} h (${t.hint})
+`+
         `Access: type=${state.propertyType}`+
           (state.propertyType==='house'?`, floors=${state.houseFloors}`:'')+
           (state.propertyType==='flat'?`, floor=${state.flatFloor}, lift=${state.lift}`:'')+
-          `, steps=${state.stairsSteps}, distance=${state.distance}m\n`+
-        `Crates: L2=${state.crates.L2||0}, L3=${state.crates.L3||0}\n`+
-        (state.notes? `Notes: ${state.notes}\n`:'')+
-        `\nInventory:\n`+
-        selected.map(x=>` • ${x.name} ×${x.qty} = ${x.subtotal.toFixed(2)} m³`).join('\n');
+          `, steps=${state.stairsSteps}, distance=${state.distance}m
+`+
+        `Crates: L2=${state.crates.L2||0}, L3=${state.crates.L3||0}
+`+
+        (state.notes? `Notes: ${state.notes}
+`:'')+
+        `
+Inventory (by tab):
+`+
+        selected.map(x=>` • [${x.tab}] ${x.name} ×${x.qty} = ${x.subtotal.toFixed(2)} m³`).join('
+');
       return { totalVolume:+totalVol.toFixed(2), itemsCount, recommendation:rec, time:t, details, inventory:selected, text };
     }
 
     // Init
-    renderItems();
+    renderTabs();
+    renderTiles();
     bindEvents();
     recompute();
   </script>
