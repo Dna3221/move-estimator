@@ -2,109 +2,664 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Move Volume Estimator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Move Volume Estimator — London House Removals</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #0a1a3c; /* ciemnoniebieskie tło */
-      color: #ffffff; /* biały tekst */
+    :root{
+      --bg:#0a1a3c;          /* dark navy */
+      --card:rgba(255,255,255,0.06);
+      --muted:rgba(255,255,255,0.6);
+      --text:#fff;
+      --accent:#ffd166;      /* amber */
+      --accent-2:#a5d8ff;    /* light blue */
+      --danger:#ff6b6b;
+      --ok:#8ce99a;
+      --line:rgba(255,255,255,0.12);
+      --chip:#152751;
+      --input:#0f2350;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;
+      background:linear-gradient(180deg,#0a1a3c 0%, #081430 60%, #08132c 100%);
+      color:var(--text);
     }
-    .container {
-      max-width: 900px;
-      margin: auto;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.5);
+    header{
+      padding:18px 20px; border-bottom:1px solid var(--line);
+      position:sticky; top:0; backdrop-filter: blur(6px); background:rgba(10,26,60,.75);
+      z-index:10;
     }
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
-      padding: 6px;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+    header .row{display:flex; align-items:center; gap:14px; max-width:1200px; margin:0 auto}
+    .brand{font-weight:800; letter-spacing:.4px;}
+    .brand small{display:block; font-weight:500; color:var(--muted); letter-spacing:0}
+
+    main{max-width:1200px; margin:20px auto; padding:0 16px; display:grid; grid-template-columns: 1.3fr .7fr; gap:16px}
+    @media (max-width: 980px){
+      main{grid-template-columns:1fr;}
     }
-    .item button {
-      padding: 4px 10px;
-      margin-left: 6px;
-      background: #ffffff;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .item button:hover {
-      background: #ddd;
-    }
-    #total {
-      font-size: 20px;
-      margin-top: 20px;
-      text-align: right;
-      font-weight: bold;
-      color: #ffcc00;
-    }
+    .card{background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    .card h2{margin:0; padding:14px 16px; border-bottom:1px solid var(--line); font-size:18px}
+    .card .content{padding:14px 16px}
+
+    /* Controls */
+    .controls{display:grid; grid-template-columns: repeat(4,1fr); gap:10px}
+    .controls .col{background:var(--input); border:1px solid var(--line); border-radius:12px; padding:12px}
+    .controls label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
+    .controls input[type="number"],
+    .controls input[type="text"],
+    .controls select{width:100%; background:#091b3f; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:10px}
+    .row-inline{display:flex; gap:8px}
+    .chip{background:var(--chip); border:1px solid var(--line); padding:6px 10px; border-radius:999px; font-size:12px; color:var(--muted)}
+
+    /* Items */
+    .items-toolbar{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap}
+    .items-toolbar input{flex:1; min-width:220px; border-radius:999px; border:1px solid var(--line); background:#091b3f; color:var(--text); padding:10px 14px}
+    .items-toolbar select{border-radius:999px; border:1px solid var(--line); background:#091b3f; color:var(--text); padding:10px 14px}
+
+    .item{display:grid; grid-template-columns:1fr 90px 180px; gap:10px; align-items:center; padding:10px 12px; border-bottom:1px dashed var(--line)}
+    .item:last-child{border-bottom:none}
+    .item-name{font-weight:600}
+    .item small{color:var(--muted)}
+    .qty{display:flex; align-items:center; gap:8px; justify-self:end}
+    .qty input{width:64px; text-align:center; background:#0b1d42; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:8px}
+    .btn{border:none; border-radius:8px; padding:8px 10px; cursor:pointer; background:#e9ecef;}
+    .btn:active{transform:translateY(1px)}
+    .btn-ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+    .btn-accent{background:var(--accent); color:#000; font-weight:700}
+    .btn-danger{background:var(--danger); color:#000; font-weight:700}
+
+    /* Summary */
+    .summary-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .summary .stat{background:var(--input); border:1px solid var(--line); border-radius:12px; padding:12px}
+    .stat h3{margin:0 0 6px 0; font-size:13px; color:var(--muted)}
+    .stat .val{font-size:22px; font-weight:800}
+    .muted{color:var(--muted)}
+
+    .actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+
+    /* Footer */
+    footer{max-width:1200px; margin:18px auto 40px; padding:0 16px; color:var(--muted)}
+    .note{font-size:12px}
   </style>
 </head>
 <body>
-  <h1>📦 Move Volume Estimator</h1>
-  <div class="container">
-    <div id="items"></div>
-    <div id="total">Total Volume: 0 m³</div>
-  </div>
+  <header>
+    <div class="row">
+      <div class="brand">
+        London House Removals Ltd
+        <small>Move Volume Estimator (dark navy)</small>
+      </div>
+      <div class="chip">XXL Luton 26 m³</div>
+      <div class="chip">Low Loader 40 m³</div>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: Items -->
+    <section class="card">
+      <h2>Inventory</h2>
+      <div class="content">
+        <div class="items-toolbar">
+          <input id="search" placeholder="Search items (e.g., wardrobe, box, sofa)…" />
+          <select id="categoryFilter">
+            <option value="all">All categories</option>
+            <option>Boxes</option>
+            <option>Bedroom</option>
+            <option>Living Room</option>
+            <option>Dining</option>
+            <option>Kitchen</option>
+            <option>Office</option>
+            <option>Outdoor</option>
+            <option>Misc</option>
+          </select>
+          <button class="btn btn-ghost" id="resetQuantities">Reset quantities</button>
+        </div>
+        <div id="items"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Job details + Summary -->
+    <section class="card">
+      <h2>Job Details & Summary</h2>
+      <div class="content">
+        <div class="controls" style="margin-bottom:12px">
+          <div class="col">
+            <label>Property type</label>
+            <select id="propertyType">
+              <option value="house">House</option>
+              <option value="flat">Flat</option>
+              <option value="office">Office</option>
+            </select>
+          </div>
+          <div class="col" id="houseFloorsCol">
+            <label>House floors (above ground)</label>
+            <select id="houseFloors">
+              <option value="0">Ground only</option>
+              <option value="1">1 floor</option>
+              <option value="2">2 floors</option>
+              <option value="3">3 floors</option>
+              <option value="4">4+ floors</option>
+            </select>
+          </div>
+          <div class="col" id="flatFloorCol" style="display:none">
+            <label>Flat level (0 = ground)</label>
+            <input type="number" id="flatFloor" min="0" max="30" value="0" />
+          </div>
+          <div class="col" id="liftCol" style="display:none">
+            <label>Lift available?</label>
+            <select id="liftAvailable">
+              <option value="yes">Yes</option>
+              <option value="no" selected>No</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Stair steps (approx total)</label>
+            <input type="number" id="stairsSteps" min="0" value="0" />
+          </div>
+          <div class="col">
+            <label>Distance to van (metres)</label>
+            <input type="number" id="distance" min="0" value="5" />
+          </div>
+          <div class="col">
+            <label>Notes</label>
+            <input type="text" id="notes" placeholder="Parking, access, keys, etc." />
+          </div>
+          <div class="col">
+            <label>Crates (optional)</label>
+            <div class="row-inline">
+              <input type="number" id="crateL2" min="0" placeholder="L2 64L" title="PHS Teacrate L2 (64L)" />
+              <input type="number" id="crateL3" min="0" placeholder="L3 80L" title="PHS Teacrate L3 (80L)" />
+            </div>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="summary-grid">
+            <div class="stat"><h3>Total volume</h3><div class="val" id="totalVolume">0.00 m³</div><div class="muted" id="itemsCount">0 items</div></div>
+            <div class="stat"><h3>Recommended crew</h3><div class="val" id="crew">—</div><div class="muted" id="crewHint"></div></div>
+            <div class="stat"><h3>Recommended vehicle</h3><div class="val" id="vehicle">—</div><div class="muted" id="vehicleHint"></div></div>
+            <div class="stat"><h3>Estimated on‑site time</h3><div class="val" id="time">—</div><div class="muted" id="timeHint"></div></div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-accent" id="copySummary">Copy summary</button>
+            <button class="btn btn-ghost" id="downloadJSON">Export JSON</button>
+            <button class="btn btn-danger" id="clearAll">Clear all</button>
+          </div>
+
+          <div class="note" style="margin-top:10px">
+            * Estimates factor in stairs, lift, distance and crate counts. Actual times may vary with packing, dismantling, protection and access constraints.
+          </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--line); margin:14px 0">
+
+        <!-- EmailJS (optional) -->
+        <div class="controls">
+          <div class="col">
+            <label>Client name</label>
+            <input id="cName" placeholder="Full name" />
+          </div>
+          <div class="col">
+            <label>Client email</label>
+            <input id="cEmail" type="email" placeholder="name@example.com" />
+          </div>
+          <div class="col">
+            <label>Send estimate</label>
+            <button class="btn btn-accent" id="sendEmail">Send via EmailJS</button>
+            <div class="muted" style="margin-top:6px; font-size:12px">Set your EmailJS keys in code (public key, service ID, template ID)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="note">© London House Removals Ltd — Internal estimating tool. Van capacities used: XXL Luton ≈ 26 m³, Low Loader ≈ 40 m³. Crew/time heuristics are conservative and intended for quoting guidance.</div>
+  </footer>
+
+  <!-- EmailJS CDN (optional) -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
   <script>
-    // Lista przykładowych przedmiotów z objętościami
-    const items = [
-      { name: "Small Box", volume: 0.05 },
-      { name: "Medium Box", volume: 0.1 },
-      { name: "Large Box", volume: 0.15 },
-      { name: "Wardrobe Box", volume: 0.3 },
-      { name: "Sofa 3-Seater", volume: 2.0 },
-      { name: "Double Bed", volume: 1.5 },
-      { name: "Dining Table", volume: 1.2 },
-      { name: "Chair", volume: 0.3 }
+    /*********************
+     * Data: Items (100+)
+     *********************/
+    const ITEMS = [
+      // Boxes (12)
+      {cat:'Boxes', name:'Small Box (45×33×33 cm)', vol:0.05},
+      {cat:'Boxes', name:'Medium Box (60×40×40 cm)', vol:0.10},
+      {cat:'Boxes', name:'Large Box (75×50×47 cm)', vol:0.15},
+      {cat:'Boxes', name:'Wardrobe Box (hanging)', vol:0.30},
+      {cat:'Boxes', name:'Picture/Mirror Box', vol:0.10},
+      {cat:'Boxes', name:'Archive Box', vol:0.07},
+      {cat:'Boxes', name:'Wine Box (12)', vol:0.09},
+      {cat:'Boxes', name:'Lamp Box', vol:0.09},
+      {cat:'Boxes', name:'TV Box 50"', vol:0.12},
+      {cat:'Boxes', name:'TV Box 65"', vol:0.16},
+      {cat:'Boxes', name:'Suitcase Medium', vol:0.08},
+      {cat:'Boxes', name:'Suitcase Large', vol:0.12},
+
+      // Bedroom (20)
+      {cat:'Bedroom', name:'Bed — Single', vol:1.00},
+      {cat:'Bedroom', name:'Bed — Double', vol:1.50},
+      {cat:'Bedroom', name:'Bed — King', vol:1.80},
+      {cat:'Bedroom', name:'Bed — Super King', vol:2.00},
+      {cat:'Bedroom', name:'Mattress — Single', vol:0.50},
+      {cat:'Bedroom', name:'Mattress — Double', vol:0.70},
+      {cat:'Bedroom', name:'Mattress — King', vol:0.90},
+      {cat:'Bedroom', name:'Wardrobe 2‑door', vol:2.50},
+      {cat:'Bedroom', name:'Wardrobe 3‑door', vol:3.50},
+      {cat:'Bedroom', name:'Wardrobe 4‑door', vol:4.50},
+      {cat:'Bedroom', name:'Chest of Drawers — 3', vol:0.70},
+      {cat:'Bedroom', name:'Chest of Drawers — 5', vol:1.10},
+      {cat:'Bedroom', name:'Bedside Table', vol:0.25},
+      {cat:'Bedroom', name:'Dressing Table', vol:0.80},
+      {cat:'Bedroom', name:'Mirror (free‑standing)', vol:0.25},
+      {cat:'Bedroom', name:'Cot / Crib', vol:0.60},
+      {cat:'Bedroom', name:'Changing Table', vol:0.50},
+      {cat:'Bedroom', name:'Ottoman/Blanket Box', vol:0.40},
+      {cat:'Bedroom', name:'Clothes Rail', vol:0.30},
+      {cat:'Bedroom', name:'Shoe Cabinet', vol:0.60},
+
+      // Living Room (20)
+      {cat:'Living Room', name:'Sofa 2‑Seater', vol:1.50},
+      {cat:'Living Room', name:'Sofa 3‑Seater', vol:2.00},
+      {cat:'Living Room', name:'Corner Sofa (L‑shape)', vol:3.50},
+      {cat:'Living Room', name:'Sofa‑Bed (add‑on)', vol:0.50},
+      {cat:'Living Room', name:'Armchair', vol:0.80},
+      {cat:'Living Room', name:'Recliner Chair', vol:1.00},
+      {cat:'Living Room', name:'Footstool / Pouffe', vol:0.20},
+      {cat:'Living Room', name:'Coffee Table', vol:0.40},
+      {cat:'Living Room', name:'Side Table', vol:0.20},
+      {cat:'Living Room', name:'TV 32"', vol:0.20},
+      {cat:'Living Room', name:'TV 50"', vol:0.30},
+      {cat:'Living Room', name:'TV 65"', vol:0.40},
+      {cat:'Living Room', name:'TV Stand / Media Unit', vol:0.60},
+      {cat:'Living Room', name:'Bookcase — Small', vol:0.70},
+      {cat:'Living Room', name:'Bookcase — Large', vol:1.20},
+      {cat:'Living Room', name:'Sideboard — Small', vol:1.00},
+      {cat:'Living Room', name:'Sideboard — Large', vol:1.60},
+      {cat:'Living Room', name:'Display Cabinet', vol:1.40},
+      {cat:'Living Room', name:'Rug (rolled)', vol:0.20},
+      {cat:'Living Room', name:'Floor Lamp', vol:0.15},
+
+      // Dining (10)
+      {cat:'Dining', name:'Dining Table — Small', vol:0.80},
+      {cat:'Dining', name:'Dining Table — Large / Ext.', vol:1.20},
+      {cat:'Dining', name:'Dining Chair', vol:0.30},
+      {cat:'Dining', name:'Bar Stool', vol:0.20},
+      {cat:'Dining', name:'Glass Cabinet', vol:1.20},
+      {cat:'Dining', name:'Wine Rack', vol:0.40},
+      {cat:'Dining', name:'Welsh Dresser', vol:1.80},
+      {cat:'Dining', name:'Console Table', vol:0.50},
+      {cat:'Dining', name:'Grandfather Clock', vol:1.00},
+      {cat:'Dining', name:'Mirror — Large', vol:0.30},
+
+      // Kitchen (12)
+      {cat:'Kitchen', name:'Fridge Freezer — Tall', vol:1.20},
+      {cat:'Kitchen', name:'Fridge — Under‑counter', vol:0.60},
+      {cat:'Kitchen', name:'Freezer — Chest', vol:1.00},
+      {cat:'Kitchen', name:'Washing Machine', vol:0.80},
+      {cat:'Kitchen', name:'Dishwasher', vol:0.80},
+      {cat:'Kitchen', name:'Tumble Dryer', vol:0.80},
+      {cat:'Kitchen', name:'Microwave', vol:0.20},
+      {cat:'Kitchen', name:'Cooker / Range', vol:1.20},
+      {cat:'Kitchen', name:'Kitchen Island (small)', vol:1.00},
+      {cat:'Kitchen', name:'Bin (large)', vol:0.15},
+      {cat:'Kitchen', name:'Food Trolley', vol:0.30},
+      {cat:'Kitchen', name:'Water Dispenser', vol:0.40},
+
+      // Office (12)
+      {cat:'Office', name:'Desk — Small', vol:0.80},
+      {cat:'Office', name:'Desk — Large', vol:1.20},
+      {cat:'Office', name:'Office Chair', vol:0.50},
+      {cat:'Office', name:'Filing Cabinet — 2 Drawer', vol:0.60},
+      {cat:'Office', name:'Filing Cabinet — 4 Drawer', vol:0.90},
+      {cat:'Office', name:'Books (per 40 cm shelf)', vol:0.15},
+      {cat:'Office', name:'Printer / MFD', vol:0.40},
+      {cat:'Office', name:'PC Tower', vol:0.20},
+      {cat:'Office', name:'Monitor 24"', vol:0.12},
+      {cat:'Office', name:'Monitor 32"', vol:0.18},
+      {cat:'Office', name:'Whiteboard', vol:0.20},
+      {cat:'Office', name:'Plan Chest', vol:1.40},
+
+      // Outdoor / Garage (12)
+      {cat:'Outdoor', name:'Bike — Adult', vol:0.50},
+      {cat:'Outdoor', name:'Bike — Child', vol:0.30},
+      {cat:'Outdoor', name:'BBQ Grill', vol:0.70},
+      {cat:'Outdoor', name:'Garden Table', vol:1.00},
+      {cat:'Outdoor', name:'Garden Chair', vol:0.40},
+      {cat:'Outdoor', name:'Bench', vol:0.80},
+      {cat:'Outdoor', name:'Lawn Mower', vol:0.60},
+      {cat:'Outdoor', name:'Hose Reel', vol:0.15},
+      {cat:'Outdoor', name:'Planter — Small', vol:0.15},
+      {cat:'Outdoor', name:'Planter — Large', vol:0.40},
+      {cat:'Outdoor', name:'Dehumidifier', vol:0.25},
+      {cat:'Outdoor', name:'Ladder (folded)', vol:0.25},
+
+      // Misc / Heavy (12)
+      {cat:'Misc', name:'Piano — Upright', vol:2.50},
+      {cat:'Misc', name:'Piano — Grand (baby)', vol:3.50},
+      {cat:'Misc', name:'Safe — Small', vol:0.40},
+      {cat:'Misc', name:'Safe — Large', vol:1.20},
+      {cat:'Misc', name:'Aquarium (medium)', vol:0.80},
+      {cat:'Misc', name:'Treadmill', vol:1.20},
+      {cat:'Misc', name:'Cross Trainer', vol:1.20},
+      {cat:'Misc', name:'Rowing Machine', vol:0.90},
+      {cat:'Misc', name:'Drum Kit (5‑piece)', vol:0.80},
+      {cat:'Misc', name:'Artwork (large, crated)', vol:0.60},
+      {cat:'Misc', name:'Chandelier (crated)', vol:0.50},
+      {cat:'Misc', name:'Server Rack 18U', vol:1.20},
     ];
 
-    let totalVolume = 0;
+    // Build a working map with quantities (persisted)
+    const state = {
+      quantities: JSON.parse(localStorage.getItem('lhr_quantities')||'{}'),
+      propertyType: localStorage.getItem('lhr_propertyType') || 'house',
+      houseFloors: +(localStorage.getItem('lhr_houseFloors')||0),
+      flatFloor: +(localStorage.getItem('lhr_flatFloor')||0),
+      lift: localStorage.getItem('lhr_lift') || 'no',
+      stairsSteps: +(localStorage.getItem('lhr_stairsSteps')||0),
+      distance: +(localStorage.getItem('lhr_distance')||5),
+      crates:{ L2:+(localStorage.getItem('lhr_crateL2')||0), L3:+(localStorage.getItem('lhr_crateL3')||0)},
+      notes: localStorage.getItem('lhr_notes')||''
+    };
 
-    const itemsContainer = document.getElementById("items");
-    const totalDiv = document.getElementById("total");
+    // DOM refs
+    const elItems = document.getElementById('items');
+    const elSearch = document.getElementById('search');
+    const elCategory = document.getElementById('categoryFilter');
+    const elResetQty = document.getElementById('resetQuantities');
 
-    items.forEach(item => {
-      const row = document.createElement("div");
-      row.className = "item";
-      row.innerHTML = `
-        <span>${item.name} (${item.volume} m³)</span>
-        <div>
-          <button onclick="addVolume(${item.volume})">➕</button>
-          <button onclick="removeVolume(${item.volume})">➖</button>
-        </div>
-      `;
-      itemsContainer.appendChild(row);
-    });
+    const elTotalVolume = document.getElementById('totalVolume');
+    const elItemsCount = document.getElementById('itemsCount');
+    const elCrew = document.getElementById('crew');
+    const elCrewHint = document.getElementById('crewHint');
+    const elVehicle = document.getElementById('vehicle');
+    const elVehicleHint = document.getElementById('vehicleHint');
+    const elTime = document.getElementById('time');
+    const elTimeHint = document.getElementById('timeHint');
 
-    function addVolume(volume) {
-      totalVolume += volume;
-      updateTotal();
+    const elPropertyType = document.getElementById('propertyType');
+    const elHouseFloors = document.getElementById('houseFloors');
+    const elFlatFloor = document.getElementById('flatFloor');
+    const elLift = document.getElementById('liftAvailable');
+    const elSteps = document.getElementById('stairsSteps');
+    const elDistance = document.getElementById('distance');
+    const elNotes = document.getElementById('notes');
+    const elCrateL2 = document.getElementById('crateL2');
+    const elCrateL3 = document.getElementById('crateL3');
+
+    const houseFloorsCol = document.getElementById('houseFloorsCol');
+    const flatFloorCol = document.getElementById('flatFloorCol');
+    const liftCol = document.getElementById('liftCol');
+
+    const elCopy = document.getElementById('copySummary');
+    const elExport = document.getElementById('downloadJSON');
+    const elClear = document.getElementById('clearAll');
+
+    const elSend = document.getElementById('sendEmail');
+    const elCName = document.getElementById('cName');
+    const elCEmail = document.getElementById('cEmail');
+
+    // Render items list
+    function renderItems(){
+      const q = (elSearch.value||'').toLowerCase();
+      const cat = elCategory.value;
+      elItems.innerHTML='';
+      ITEMS.filter(it => (cat==='all'||it.cat===cat) && (it.name.toLowerCase().includes(q))).forEach((it, idx)=>{
+        const key = it.cat+'|'+it.name;
+        const qty = state.quantities[key]||0;
+        const row = document.createElement('div');
+        row.className = 'item';
+        row.innerHTML = `
+          <div>
+            <div class="item-name">${it.name}</div>
+            <small class="muted">${it.cat} · ${it.vol.toFixed(2)} m³</small>
+          </div>
+          <div><span class="chip">${(qty*it.vol).toFixed(2)} m³</span></div>
+          <div class="qty">
+            <button class="btn" data-act="minus" data-key="${key}" data-vol="${it.vol}">−</button>
+            <input type="number" min="0" value="${qty}" data-key="${key}" class="qty-input" />
+            <button class="btn" data-act="plus" data-key="${key}" data-vol="${it.vol}">+</button>
+          </div>
+        `;
+        elItems.appendChild(row);
+      });
     }
 
-    function removeVolume(volume) {
-      if (totalVolume >= volume) {
-        totalVolume -= volume;
-        updateTotal();
+    function saveState(){
+      localStorage.setItem('lhr_quantities', JSON.stringify(state.quantities));
+      localStorage.setItem('lhr_propertyType', state.propertyType);
+      localStorage.setItem('lhr_houseFloors', state.houseFloors);
+      localStorage.setItem('lhr_flatFloor', state.flatFloor);
+      localStorage.setItem('lhr_lift', state.lift);
+      localStorage.setItem('lhr_stairsSteps', state.stairsSteps);
+      localStorage.setItem('lhr_distance', state.distance);
+      localStorage.setItem('lhr_notes', state.notes);
+      localStorage.setItem('lhr_crateL2', state.crates.L2);
+      localStorage.setItem('lhr_crateL3', state.crates.L3);
+    }
+
+    // Recompute totals + recommendations
+    function recompute(){
+      // Totals
+      let totalVol = 0; let itemsCount=0;
+      for(const it of ITEMS){
+        const key = it.cat+'|'+it.name; const q = state.quantities[key]||0;
+        if(q>0){ itemsCount += q; totalVol += q*it.vol; }
       }
+      // Include crates (approx volumes)
+      totalVol += state.crates.L2 * 0.064; // 64L ≈ 0.064 m³
+      totalVol += state.crates.L3 * 0.080; // 80L ≈ 0.080 m³
+
+      // Crew & van rules by volume
+      const rec = recommendCrewVehicle(totalVol, state);
+
+      // Time estimate
+      const t = estimateTime(totalVol, state, rec.crew);
+
+      // Update UI
+      elTotalVolume.textContent = totalVol.toFixed(2) + ' m³';
+      elItemsCount.textContent = `${itemsCount} items`;
+      elCrew.textContent = rec.crew ? `${rec.crew} movers` : '—';
+      elCrewHint.textContent = rec.crewHint || '';
+      elVehicle.textContent = rec.vehicle || '—';
+      elVehicleHint.textContent = rec.vehicleHint || '';
+      elTime.textContent = t.elapsed ? `${t.elapsed.toFixed(1)} h` : '—';
+      elTimeHint.textContent = t.hint || '';
+
+      return {totalVol, itemsCount, rec, t};
     }
 
-    function updateTotal() {
-      totalDiv.textContent = `Total Volume: ${totalVolume.toFixed(2)} m³`;
+    function recommendCrewVehicle(v, s){
+      let crew=2, crewHint='Base crew';
+      if(v>10) { crew=3; crewHint='Volume > 10 m³'; }
+      if(v>26) { crew=3; crewHint='Approaching full Luton'; }
+      if(v>35) { crew=4; crewHint='Large load'; }
+      if(v>52) { crew=5; crewHint='Very large load'; }
+
+      // Access adjustments
+      const stairsFactor = stairsMultiplier(s);
+      const distFactor = distanceMultiplier(s.distance);
+      if(stairsFactor > 0.20 || distFactor > 0.20){ crew += 1; crewHint += ' + difficult access'; }
+
+      // Vehicle choice (single-trip preference)
+      let vehicle='1 × Luton (26 m³)', vehicleHint='Single trip';
+      if(v<=26){ vehicle = '1 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=40){ vehicle = '1 × Low Loader (40 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=52){ vehicle = '2 × Luton (26 m³)'; vehicleHint = 'Single trip'; }
+      else if(v<=80){ vehicle = '2 × Luton (26 m³), 2 trips or 1 × Low Loader + overflow'; vehicleHint = 'Multi-trip likely'; }
+      else { vehicle = 'Consider 7.5t or additional vans'; vehicleHint = 'Very large move'; }
+
+      return {crew, crewHint, vehicle, vehicleHint};
     }
+
+    function stairsMultiplier(s){
+      // Floors to factor (house floors are above ground; flat uses flatFloor)
+      let floors = s.propertyType==='house' ? Number(s.houseFloors||0) : Number(s.flatFloor||0);
+      if(isNaN(floors)||floors<0) floors = 0;
+      let m = 0.10 * floors; // 10% per floor
+      const steps = Number(s.stairsSteps||0);
+      if(steps>0) m += (steps/20) * 0.05; // +5% per ~20 steps
+      if(s.propertyType==='flat' && s.lift==='yes') m *= 0.5;  // lift halves the penalty
+      return m;
+    }
+
+    function distanceMultiplier(d){
+      d = Number(d||0);
+      if(d<=10) return 0;
+      if(d<=25) return 0.10;
+      if(d<=50) return 0.20;
+      return 0.35; // long carry
+    }
+
+    function estimateTime(v, s, crew){
+      if(!v || v<=0 || !crew) return {elapsed:0, hint:''};
+      // Baseline productivity: ~3.0 m³ per mover-hour under ideal access
+      const baseRatePerMover = 3.0;
+      let baseHours = v / (crew * baseRatePerMover);
+      // Apply access multipliers
+      const mStairs = stairsMultiplier(s);
+      const mDist = distanceMultiplier(s.distance);
+      const mTotal = 1 + mStairs + mDist;
+      const elapsed = baseHours * mTotal; // hours elapsed with this crew
+      const crewHours = elapsed * crew;
+      const hint = `Crew‑hours ≈ ${crewHours.toFixed(1)} (stairs +${Math.round(mStairs*100)}%, distance +${Math.round(mDist*100)}%)`;
+      return {elapsed, hint};
+    }
+
+    // Event wiring
+    function bindEvents(){
+      elItems.addEventListener('click', e=>{
+        const btn = e.target.closest('button'); if(!btn) return;
+        const key = btn.getAttribute('data-key');
+        const act = btn.getAttribute('data-act');
+        if(!key||!act) return;
+        const current = state.quantities[key]||0;
+        const next = Math.max(0, current + (act==='plus'?1:-1));
+        state.quantities[key]=next; saveState(); renderItems(); recompute();
+      });
+      elItems.addEventListener('change', e=>{
+        const inp = e.target.closest('.qty-input'); if(!inp) return;
+        const key = inp.getAttribute('data-key'); let v = parseInt(inp.value,10);
+        if(isNaN(v)||v<0) v = 0; state.quantities[key]=v; saveState(); renderItems(); recompute();
+      });
+
+      [elSearch, elCategory].forEach(el=> el.addEventListener('input', renderItems));
+      elResetQty.addEventListener('click', ()=>{ state.quantities={}; saveState(); renderItems(); recompute(); });
+
+      // Details inputs
+      elPropertyType.value = state.propertyType;
+      elHouseFloors.value = state.houseFloors;
+      elFlatFloor.value = state.flatFloor;
+      elLift.value = state.lift;
+      elSteps.value = state.stairsSteps;
+      elDistance.value = state.distance;
+      elNotes.value = state.notes;
+      elCrateL2.value = state.crates.L2 || '';
+      elCrateL3.value = state.crates.L3 || '';
+
+      function toggleAccess(){
+        const type = elPropertyType.value;
+        houseFloorsCol.style.display = (type==='house')? 'block':'none';
+        flatFloorCol.style.display = (type==='flat')? 'block':'none';
+        liftCol.style.display = (type==='flat')? 'block':'none';
+      }
+      toggleAccess();
+
+      elPropertyType.addEventListener('change', ()=>{ state.propertyType = elPropertyType.value; toggleAccess(); saveState(); recompute(); });
+      elHouseFloors.addEventListener('change', ()=>{ state.houseFloors = +elHouseFloors.value; saveState(); recompute(); });
+      elFlatFloor.addEventListener('input', ()=>{ state.flatFloor = +elFlatFloor.value; saveState(); recompute(); });
+      elLift.addEventListener('change', ()=>{ state.lift = elLift.value; saveState(); recompute(); });
+      elSteps.addEventListener('input', ()=>{ state.stairsSteps = +elSteps.value; saveState(); recompute(); });
+      elDistance.addEventListener('input', ()=>{ state.distance = +elDistance.value; saveState(); recompute(); });
+      elNotes.addEventListener('input', ()=>{ state.notes = elNotes.value; saveState(); });
+      elCrateL2.addEventListener('input', ()=>{ state.crates.L2 = +elCrateL2.value; saveState(); recompute(); });
+      elCrateL3.addEventListener('input', ()=>{ state.crates.L3 = +elCrateL3.value; saveState(); recompute(); });
+
+      // Actions
+      elCopy.addEventListener('click', ()=>{
+        const data = buildSummary();
+        navigator.clipboard.writeText(data.text).then(()=>{
+          elCopy.textContent = 'Copied!'; setTimeout(()=> elCopy.textContent='Copy summary', 1200);
+        });
+      });
+      elExport.addEventListener('click', ()=>{
+        const blob = new Blob([JSON.stringify(buildSummary(), null, 2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='move-estimate.json'; a.click(); URL.revokeObjectURL(url);
+      });
+      elClear.addEventListener('click', ()=>{
+        if(!confirm('Clear all selections and details?')) return;
+        state.quantities={}; state.propertyType='house'; state.houseFloors=0; state.flatFloor=0; state.lift='no'; state.stairsSteps=0; state.distance=5; state.crates={L2:0,L3:0}; state.notes=''; saveState();
+        elPropertyType.value=state.propertyType; elHouseFloors.value=0; elFlatFloor.value=0; elLift.value='no'; elSteps.value=0; elDistance.value=5; elNotes.value=''; elCrateL2.value=''; elCrateL3.value='';
+        renderItems(); recompute();
+      });
+
+      // EmailJS send
+      elSend.addEventListener('click', ()=>{
+        const payload = buildSummary();
+        const name = (elCName.value||'').trim();
+        const email = (elCEmail.value||'').trim();
+        if(!name || !email){ alert('Please enter client name and email'); return; }
+        try{
+          // Set your keys below (public key, service ID, template ID)
+          const PUBLIC_KEY = 'YOUR_EMAILJS_PUBLIC_KEY';
+          const SERVICE_ID = 'YOUR_SERVICE_ID';
+          const TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+          if(!emailjs || PUBLIC_KEY.startsWith('YOUR_')){ alert('Configure EmailJS keys in code before sending.'); return; }
+          emailjs.init(PUBLIC_KEY);
+          emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+            client_name: name,
+            client_email: email,
+            summary_text: payload.text,
+            json_data: JSON.stringify(payload)
+          }).then(()=> alert('Estimate sent.'), err=> alert('Email failed: '+err?.text||'unknown'));
+        }catch(err){ alert('Email error: '+err.message); }
+      });
+    }
+
+    function buildSummary(){
+      const {totalVol, itemsCount, rec, t} = recompute();
+      const selected = [];
+      for(const it of ITEMS){
+        const key = it.cat+'|'+it.name; const q = state.quantities[key]||0;
+        if(q>0) selected.push({category:it.cat, name:it.name, qty:q, vol:it.vol, subtotal:+(q*it.vol).toFixed(2)});
+      }
+      const details = {
+        propertyType: state.propertyType,
+        houseFloors: state.propertyType==='house'? state.houseFloors : undefined,
+        flatFloor: state.propertyType==='flat'? state.flatFloor : undefined,
+        lift: state.propertyType==='flat'? state.lift : undefined,
+        stairsSteps: state.stairsSteps,
+        distance: state.distance,
+        crates: state.crates,
+        notes: state.notes
+      };
+      const text = `Move estimate\n\n`+
+        `Total volume: ${totalVol.toFixed(2)} m³\n`+
+        `Items: ${itemsCount}\n`+
+        `Recommended crew: ${rec.crew} movers (${rec.crewHint})\n`+
+        `Recommended vehicle: ${rec.vehicle} (${rec.vehicleHint})\n`+
+        `Estimated on-site time: ${t.elapsed? t.elapsed.toFixed(1):'-'} h (${t.hint})\n`+
+        `Access: type=${state.propertyType}`+
+          (state.propertyType==='house'?`, floors=${state.houseFloors}`:'')+
+          (state.propertyType==='flat'?`, floor=${state.flatFloor}, lift=${state.lift}`:'')+
+          `, steps=${state.stairsSteps}, distance=${state.distance}m\n`+
+        `Crates: L2=${state.crates.L2||0}, L3=${state.crates.L3||0}\n`+
+        (state.notes? `Notes: ${state.notes}\n`:'')+
+        `\nInventory:\n`+
+        selected.map(x=>` • ${x.name} ×${x.qty} = ${x.subtotal.toFixed(2)} m³`).join('\n');
+      return { totalVolume:+totalVol.toFixed(2), itemsCount, recommendation:rec, time:t, details, inventory:selected, text };
+    }
+
+    // Init
+    renderItems();
+    bindEvents();
+    recompute();
   </script>
 </body>
 </html>
