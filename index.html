@@ -715,50 +715,61 @@ els.btnReset.onclick = ()=>{
 };
 
   
-/* ========= SUBMIT (EmailJS) ========= */
-els.btnSubmit.onclick = async ()=>{
-
+els.btnSubmit.onclick = async () => {
   const t = calcTotals();
 
-  // Flatten item selections
-  const lines = [];
-  Object.entries(CATALOG).forEach(([cat, items])=>{
-    items.forEach(it=>{
-      const q = state.qty[it.id]||0;
-      if(q>0){
-        lines.push(`- ${cat} | ${it.name} × ${q} • ${m3(it.dims).toFixed(3)} m³ each`);
-      }
-    });
-  });
+  // Move details block
+  const move_details = 
+`Floors: ${state.details.floorFrom} → ${state.details.floorTo}
+Access: ${state.details.stairs}
+Parking: ${state.details.parking} m
+Notes: ${state.details.notes || "—"}`;
 
-  const perRoomLines = Object.entries(t.perRoom)
-    .filter(([,info])=>info.count>0)
-    .map(([cat,info])=>`• ${cat}: ${info.count} items • ${info.m3.toFixed(3)} m³`);
+  // Totals block
+  const totals =
+`Total m³: ${t.totalM3.toFixed(3)}
+Total ft³: ${t.totalFT3}
+Total items: ${t.totalItems}
+Boxes: ${t.totalBoxes}`;
 
-  const now = new Date();
-  const pad = (n)=> String(n).padStart(2,'0');
-  const stamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  // Van advice block
+  const van_advice = els.vanText.innerText;
 
-  const message =
-`Move Estimate (${stamp})
+  // Per-room block
+  const per_room = Object.entries(t.perRoom)
+    .filter(([c, info]) => info.count > 0)
+    .map(([c, info]) => `${c}: ${info.count} items • ${info.m3.toFixed(3)} m³`)
+    .join("\n");
 
-Move details:
-...
-JSON (for import):
-${JSON.stringify(state)}
-`;
+  // Inventory block
+  const inventory = Object.entries(CATALOG).map(([cat, items]) => {
+    const rows = items
+      .filter(it => state.qty[it.id] > 0)
+      .map(it => `${it.name} × ${state.qty[it.id]} (${m3(it.dims).toFixed(3)} m³ each)`)
+      .join("\n");
+    return rows ? `\n${cat}\n${rows}` : "";
+  }).join("");
 
-  try{
+  // JSON backup
+  const json_export = JSON.stringify(state, null, 2);
+
+  try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      message: message,
-      to_email: FIXED_TO_EMAIL,
-      subject: "Move Estimate",
+      subject: "Move Estimate Report",
+      move_details,
+      totals,
+      van_advice,
+      per_room,
+      inventory,
+      json_export
     });
-    alert("✅ Estimate sent successfully!");
-  }catch(err){
-    alert("❌ Error sending estimate:\n" + JSON.stringify(err));
+
+    alert("Estimate sent!");
+  } catch (err) {
+    alert("Email send error: " + JSON.stringify(err));
   }
 };
+
 
 
 /* ========= MOVE FIELD EVENTS ========= */
@@ -842,5 +853,6 @@ renderTabs(); load(); renderCards(); update();
 </script>
 </body>
 </html>
+
 
 
