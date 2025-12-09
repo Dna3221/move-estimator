@@ -714,8 +714,10 @@ els.btnReset.onclick = ()=>{
   save(); renderCards(); update();
 };
 
+  
 /* ========= SUBMIT (EmailJS) ========= */
 els.btnSubmit.onclick = async ()=>{
+
   const t = calcTotals();
 
   // Flatten item selections
@@ -741,23 +743,7 @@ els.btnSubmit.onclick = async ()=>{
 `Move Estimate (${stamp})
 
 Move details:
-- Floors: ${state.details.floorFrom} → ${state.details.floorTo}
-- Access: ${state.details.stairs}
-- Parking: ${state.details.parking} m
-- Notes: ${state.details.notes ? state.details.notes : '—'}
-
-Totals:
-- Total m³: ${t.totalM3.toFixed(3)}
-- Total ft³: ${t.totalFT3}
-- Total items: ${t.totalItems}
-- Boxes (all sizes): ${t.totalBoxes}
-
-Per-room totals:
-${perRoomLines.length ? perRoomLines.join('\n') : '—'}
-
-Items:
-${lines.length ? lines.join('\n') : '—'}
-
+...
 JSON (for import):
 ${JSON.stringify(state)}
 `;
@@ -773,6 +759,7 @@ ${JSON.stringify(state)}
     alert("❌ Error sending estimate:\n" + JSON.stringify(err));
   }
 };
+
 
 /* ========= MOVE FIELD EVENTS ========= */
 ['floorFrom','floorTo','parking','stairs','notes'].forEach(k=>{
@@ -855,4 +842,5 @@ renderTabs(); load(); renderCards(); update();
 </script>
 </body>
 </html>
+
 
